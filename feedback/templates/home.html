@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<title>FeedBack</title>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}">
+	
+</head>
+<body>
+	<h2>Форма обратной связи</h2>
+	<p id="succestext"></p>
+	<p id="errortext"></p>
+
+	<form id="formf" action="/post/" method="post">
+		{% csrf_token %}
+		<input autocomplete="off" id="name" 
+		name="name" 
+		type="text" 
+		placeholder="Name:"> <br>
+		<textarea placeholder="Text:" name="text" id="text" cols="30" rows="10"></textarea> <br>
+		<button id="btnmy" type="submit">Send</button>
+	</form>
+	
+	<script>
+
+		$('#formf').on('submit', function(event){
+			event.preventDefault();
+
+			var namev = document.getElementById('name').value
+			var textv = document.getElementById('text').value
+
+			if (namev.length < 3){
+				$("#succestext").text("")
+				$("#errortext").text("Имя не меньше 3")
+			}
+			else if(textv.length < 10){
+				$("#succestext").text("")
+				$("#errortext").text("Текст не меньше 10")
+			}
+			else{
+				$.ajax({
+				url: '/post/',
+				type: 'POST',
+				data: { name : $('#name').val(), 
+				text : $('#text').val() },
+				success : function(json){
+					$('#name').val('');
+					$('#text').val('');
+				
+				$("#succestext").text("Сообшение отправлено")
+				$("#errortext").text("")
+				}
+				
+			});
+			}
+
+
+		})
+
+		// using jQuery
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+	</script>
+</body>
+</html>
